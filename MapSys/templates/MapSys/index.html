@@ -1,26 +1,96 @@
-<html>
-<head>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-   crossorigin=""/>
- <!-- Make sure you put this AFTER Leaflet's CSS -->
- <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-   integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
-   crossorigin=""></script>
-   <style>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-   #mapid { height: 100%; }
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+ {% load static %}
 
-   </style>
+    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css'%}"/>
+    <link rel="stylesheet" href="{% static 'css/MarkerCluster.Default.css'%}">
+    <script src="{% static 'js/leaflet.markercluster-src.js'%}"></script>
+    <script src="{% static 'js/realworld.388.js'%}"></script>
+    <script src="{% static 'js/Leaflet.Icon.Glyph.js' %}"></script>
+    <script src="{% static 'js/jquery.js'%}"></script>
 
+    <title>WGCS</title>
+    <style>
+    body {
+      padding: 0;
+      margin: 0;
+  }
+    #mapid{
+      height: 100%;
+    }
+    .t1 {
+      height: 33.33%;
+    }
+    .t2 {
+      height: auto;
+      margin-bottom: 100px;
+    }
+    .t3 {
+    height:auto;
+    }
+    .overlay {
+      position: relative;
+      z-index: 401;
+      pointer-events: visiblePainted;
+      pointer-events: auto;
+    }
+.re{
+  position: relative;
+  z-index: 401;
+  pointer-events: visiblePainted;
+  pointer-events: auto;
+}
+.ov{
+  position: relative;
+  z-index: 401;
+  pointer-events: visiblePainted;
+  pointer-events: auto;
+}
+.of{
+  z-index: 401;
+  pointer-events: visiblePainted;
+  pointer-events: auto;
+}
+.my-custom-scrollbar {
+height:200px;
+overflow:auto;
+}
+@media screen and (max-width: 375px) and (max-height:735px){
+  .of {
+    display: none;
+  }
+}
+@media screen and (max-width: 414px) and (max-height:823px){
+  .t2{
+    margin-bottom: 0px;
+  }
+}
+@media screen and (max-width: 414px) and (max-height:823px){
+  .t2{
+    margin-bottom: 0px;
+  }
+}
+@media screen and (max-width: 1000px) and (max-height:760px) and (orientation: landscape) {
+  .t3 {
+    display: none;
+  }
+}
+    </style>
    </head>
 
+
    <body>
-     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="navi">
        <a class="navbar-brand" href="#"><h1>CMVS</h1></a>
  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
    <span class="navbar-toggler-icon"></span>
@@ -31,10 +101,10 @@
        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
      </li>
      <li class="nav-item">
-       <a class="nav-link" href="#">Features</a>
+       <a class="nav-link" href="#">Parameters</a>
      </li>
      <li class="nav-item">
-       <a class="nav-link" href="#">Pricing</a>
+       <a class="nav-link" href="#">Calibration</a>
      </li>
      <li class="nav-item dropdown">
        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -45,25 +115,179 @@
          <a class="dropdown-item" href="#">Another action</a>
          <a class="dropdown-item" href="#">Something else here</a>
        </div>
-     </li>
    </ul>
+ </li>
  </div>
-</nav>
-   <div id="mapid"></div>
-   <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    </nav>
 
+
+     <div class="container-fluid" id="mapid">
+
+       <div class="row t1">
+         <div class="col"></div>
+         <div class="col"></div>
+         <div class="col"></div>
+         <div class="col"></div>
+         <div class="col"></div>
+         <div class="col"></div>
+         <div class="col"></div>
+         <div class="col"></div>
+       </div>
+<div class="row t2">
+  <div class="col"></div>
+  <div class="col"></div>
+  <div class="col"></div>
+    <div class="col"></div>
+  <div class="col re">
+<div class="card border-primary mb-3">
+  <div class="card-header text-primary">Upload Waypoints!</div>
+  <div class="card-body text-primary">
+    <h5 class="card-title">Upoload a File</h5>
+    <p class="card-text">
+      <form method="post" enctype="multipart/form-data" id="formFile">
+        {%csrf_token%}
+      <div class="form-group">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="customFile" name="File" onchange="fileName()">
+          <label class="custom-file-label" for="customFile" id="labelFile">Choose file</label>
+        </div>
+      </div>
+    </form></p>
+  </div>
+</div>
+    </div>
+
+</div>
+
+<div class="row t3" >
+<div class="col">
+<div class="ov btn-group flex-wrap" >
+  <button type="button" class="btn btn-primary">ARM</button>
+  <button type="button" class="btn btn-secondary">DISARM</button>
+  <button type="button" class="btn btn-success">RTL</button>
+  <button type="button" class="btn btn-danger">LAND</button>
+  <button type="button" class="btn btn-warning">AUTO</button>
+  <button type="button" class="btn btn-info">STABILIZE</button>
+  <button type="button" class="btn btn-light">LOITER</button>
+  <button type="button" class="btn btn-dark">GUIDED</button>
+</div>
+</div>
+<div class="col of">
+  <div class="table-responsive my-custom-scrollbar">
+  <table class="table table-hover table-dark" style="margin:0px;">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Latitude</th>
+      <th scope="col">Longitude</th>
+      <th scope="col">Altitude</th>
+      <th scope="col">Delay</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody id="table-insert">
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+   </div>
    <script>
+   var map = L.map('mapid').setView([30.2839, 57.0834], 5);
+  // L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+  L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    //attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    //maxZoom: 18,
+    //id: 'mapbox.streets',
+    accessToken: 'pk.eyJ1IjoiYmFiYWtha2JhcmkiLCJhIjoiY2sxODYxcnVlMWo0bDNvdGdzaWJsZDFzdyJ9.1-2Z4mBSMB4OwqJRSvZUDQ'
+   }).addTo(map);
+   var latlngs = [];
+// zoom the map to the polyline
+//map.fitBounds(polyline.getBounds());
+   /*var ciLayer = L.canvasIconLayer({}).addTo(map);
 
-   var mymap = L.map('mapid').setView([30.2839, 57.0834], 13);
-   L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-   	attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-   	maxZoom: 18,
-   	id: 'mapbox.streets',
-   	accessToken: 'pk.eyJ1IjoiYmFiYWtha2JhcmkiLCJhIjoiY2sxODYxcnVlMWo0bDNvdGdzaWJsZDFzdyJ9.1-2Z4mBSMB4OwqJRSvZUDQ'
-   }).addTo(mymap);
+     ciLayer.addOnClickListener(function (e,data) {console.log(data[0].data._latlng)});
+     ciLayer.addOnHoverListener(function (e,data) {console.log(data[0].data._leaflet_id)});
+   var icon = L.icon({
+   iconUrl: "{% static 'img/marker-red.png'%}",
+   iconSize: [20, 18],
+   iconAnchor: [10, 9]
+   });
+   var marker = L.marker([30.2839, 57.0834], {icon: icon});
+   ciLayer.addMarker(marker);
+   var markers = [];
+   {% for x in lat %}
+   {% for y in lon %}
+    var marker = L.marker([{{ y }},{{ x }}], {icon: icon});
+   markers.push(marker);
+   {% endfor %}
+   {% endfor %}
+   if(markers.length){
+     ciLayer.addLayers(markers);
+/*    var markers = L.markerClusterGroup();
+   {% for x in lat %}
+   {% for y in lon %}
+    var marker = L.marker([{{ y }},{{ x }}]);
+    markers.addLayer(marker);
+   {% endfor %}
+   {% endfor %}
+   map.addLayer(markers);
+*/
+//var copymarker=[];
+	if(typeof addressPoints !== 'undefined'){
+    map.flyTo([addressPoints[0][1],addressPoints[0][2]] ,10);
+var markers = L.markerClusterGroup({spiderfyOnMaxZoom: false,disableClusteringAtZoom: 18});
 
+for (var i = 0; i < addressPoints.length; i++) {
+  var a = addressPoints[i];
+  var title = a[0];
+  var marker = L.marker(new L.LatLng(a[1], a[2]), { title: title , myCustomId: 0});
+  marker.on('click',onClick);
+//  marker.bindPopup(title);
+  markers.addLayer(marker);
+  //copymarker = markers;
+}
+map.addLayer(markers);
+}
+var i=1;
+  function onClick(e){
+    var icon = L.icon.glyph({
+    		prefix: '',
+        cssClass:'sans-serif',
+        glyphSize: '18px',
+    		glyph: i
+    	});
+    this.setIcon(icon)
+    this.options.myCustomId =i;
+    document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">"+i+"</th><td>"+e.latlng.lat+"</td><td>"+e.latlng.lng+"</td><td></td><td></td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td></tr>";
+    latlngs.push([e.latlng.lat,e.latlng.lng]);
+    var polyline = L.polyline(latlngs, {color: '#28d4ac'}).addTo(map);
+        i++;
+  }
+  function fileName(e) {
+    document.getElementById('labelFile').innerHTML=document.getElementById('customFile').value;
+    document.getElementById('formFile').submit();
+  }
+  function rowClick(e) {
+    map.flyTo([e.getElementsByTagName('td')[0].innerHTML,e.getElementsByTagName('td')[1].innerHTML],18);
+  }
+  function removeRow(e){
+  $(document).ready(function(){
+    $(e).parent().parent().hide();
+    markers.eachLayer(function(l) {
+    if( l instanceof L.Marker && l.options.myCustomId == $(e).parent().prev().prev().prev().prev().prev().html()){
+      l.setIcon(new L.Icon.Default());
+      }
+});
+  });
+  }
    </script>
 
+   <!-- Optional JavaScript -->
+     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
    </body>
-
    </html>
