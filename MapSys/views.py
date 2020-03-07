@@ -97,7 +97,7 @@ def startmission(request):
         #print ('Raw Data: "%s"' % request.body)
         json_data = json.loads(request.body)
         fs = FileSystemStorage()
-        f = open("mpmission1.txt", "w")
+        f = open("mpmissionfile.txt", "w")
         f.write("QGC WPL 110\n")
         global check
         if check:

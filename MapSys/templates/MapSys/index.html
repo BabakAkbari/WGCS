@@ -328,9 +328,7 @@ overflow:auto;
      }
    });
 var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-$(function() {
-    $('[data-toggle="popover"]').popover()
-})
+
 var map = L.map('mapid').setView([30.2839, 57.0834], 5);
 L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -349,7 +347,17 @@ var markers = L.markerClusterGroup({
     disableClusteringAtZoom: 18
 });
 
-
+$(function() {
+    $('[data-toggle="popover"]').popover()
+    $('body').on('click', function (e) {
+    //only buttons
+    if ($(e.target).data('toggle') !== 'popover'
+        && $(e.target).parents('.popover.in').length === 0) {
+        makesure = 0;
+        $('[data-toggle="popover"]').popover('hide');
+    }
+});
+})
 //show uploaded address Points
 if (typeof addressPoints !== 'undefined') {
     map.flyTo([addressPoints[0][1], addressPoints[0][2]], 10);
@@ -652,10 +660,10 @@ function csrfSafeMethod(method) {
               delay : document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[3].innerHTML
             });
         }
-        var d = new Date();
-        d.setTime(d.getTime() + (1*24*60*60*1000));
-        var expires = "expires="+ d.toUTCString();
-       document.cookie = JSON.stringify(obj)+";" + expires + ";path=/";
+  //      var d = new Date();
+  //      d.setTime(d.getTime() + (1*24*60*60*1000));
+  //      var expires = "expires="+ d.toUTCString();
+  //     document.cookie = JSON.stringify(obj)+";" + expires + ";path=/";
     var request = new Request(
       '/MapSys/startmission',
     {headers: {'X-CSRFToken': csrftoken}}
