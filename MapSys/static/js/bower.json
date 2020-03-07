@@ -1,0 +1,8 @@
+{
+    "name": "leaflet-marker-rotate",
+    "main": "leaflet-marker-rotate",
+    "version": "0.1",
+    "ignore": [
+        ".git/*"
+    ]
+}

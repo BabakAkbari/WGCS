@@ -18,6 +18,7 @@
     <script src="{% static 'js/realworld.388.js'%}"></script>
     <script src="{% static 'js/Leaflet.Icon.Glyph.js' %}"></script>
     <script src="{% static 'js/jquery.js'%}"></script>
+    <script src="{% static 'js/leaflet.rotatedMarker.js'%}"></script>
 
     <title>WGCS</title>
     <style>
@@ -53,6 +54,12 @@
 .ov{
   position: relative;
   z-index: 401;
+  pointer-events: visiblePainted;
+  pointer-events: auto;
+}
+.n{
+  position: relative;
+  z-index: 1000;
   pointer-events: visiblePainted;
   pointer-events: auto;
 }
@@ -120,7 +127,6 @@ overflow:auto;
  </div>
     </nav>
 
-
      <div class="container-fluid" id="mapid">
 
        <div class="row t1">
@@ -131,7 +137,24 @@ overflow:auto;
          <div class="col"></div>
          <div class="col"></div>
          <div class="col"></div>
-         <div class="col"></div>
+         <div class="col ov">
+          <button id="connect" class="btn btn-primary" type="button" disabled>
+            <span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading...
+          </button>
+          <div class="card" style="width: 18rem;">
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <h6 class="card-subtitle mb-2 text-muted">Altitude-rel (m) :</h6>
+    <p class="card-text" id="altitude"></p>
+    <h6 class="card-subtitle mb-2 text-muted">Current-Heading (Deg) :</h6>
+    <p class="card-text" id="heading"></p>
+    <!--
+    <a href="#" class="card-link">Card link</a>
+    <a href="#" class="card-link">Another link</a>-->
+  </div>
+</div>
+         </div>
        </div>
 <div class="row t2">
   <div class="col"></div>
@@ -159,6 +182,81 @@ overflow:auto;
 
 </div>
 
+
+<!-- Modal -->
+<div class="modal fade bd-example-modal-sm" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+
+
+  <div class="form-group">
+    <label for="recipient-name" class="col-form-label"><h5>Set Deafult Altitude:</h5></label>
+    <input type="text" class="form-control" id="text_alt">
+  </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-primary" id="altbtn" onClick="SetAltitudeModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+</div>
+<!-- Modal -->
+<div class="modal fade bd-example-modal-sm" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+
+
+  <div class="form-group">
+    <label for="recipient-name" class="col-form-label"><h5>Set Deafult Delay:</h5></label>
+    <input type="text" class="form-control" id="text_delay">
+  </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-primary" id="delaybtn" onClick="SetDelayModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+</div>
+<!-- Modal -->
+<div class="modal fade bd-example-modal-sm" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+
+
+  <div class="form-group">
+    <label for="recipient-name" class="col-form-label"><h5>Set number of times:</h5></label>
+    <input type="text" class="form-control" id="text_count">
+  </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-primary" id="countbtn" onClick="SetnumoftimesModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
 <div class="row t3" >
 <div class="col">
 <div class="ov btn-group flex-wrap" >
@@ -166,15 +264,16 @@ overflow:auto;
   <button type="button" class="btn btn-secondary">DISARM</button>
   <button type="button" class="btn btn-success">RTL</button>
   <button type="button" class="btn btn-danger">LAND</button>
-  <button type="button" class="btn btn-warning">AUTO</button>
+  <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal">AUTO</button>
   <button type="button" class="btn btn-info">STABILIZE</button>
   <button type="button" class="btn btn-light">LOITER</button>
   <button type="button" class="btn btn-dark">GUIDED</button>
+  <button type="button" class="btn btn-lg btn-danger" data-toggle="popover" id="startmission" title="&#9888 Caution" data-content="Are you sure you want to fly the vehicle. click again?"onclick="csrfSafeMethod()">Click to Start Mission!</button>
 </div>
 </div>
-<div class="col of">
+<div class="col of" id="tid">
   <div class="table-responsive my-custom-scrollbar">
-  <table class="table table-hover table-dark" style="margin:0px;">
+  <table class="table table-hover table-dark" style="margin:0px;" id="tab">
   <thead>
     <tr>
       <th scope="col">#</th>
@@ -193,100 +292,433 @@ overflow:auto;
 </div>
    </div>
    <script>
-   var map = L.map('mapid').setView([30.2839, 57.0834], 5);
-  // L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-  L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    //attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    //maxZoom: 18,
-    //id: 'mapbox.streets',
-    accessToken: 'pk.eyJ1IjoiYmFiYWtha2JhcmkiLCJhIjoiY2sxODYxcnVlMWo0bDNvdGdzaWJsZDFzdyJ9.1-2Z4mBSMB4OwqJRSvZUDQ'
-   }).addTo(map);
-   var latlngs = [];
-// zoom the map to the polyline
-//map.fitBounds(polyline.getBounds());
-   /*var ciLayer = L.canvasIconLayer({}).addTo(map);
-
-     ciLayer.addOnClickListener(function (e,data) {console.log(data[0].data._latlng)});
-     ciLayer.addOnHoverListener(function (e,data) {console.log(data[0].data._leaflet_id)});
-   var icon = L.icon({
-   iconUrl: "{% static 'img/marker-red.png'%}",
-   iconSize: [20, 18],
-   iconAnchor: [10, 9]
+   $('#exampleModal').on('keypress', function (event) {
+     //alert("BEFORE ENTER clicked");
+     var keycode = (event.keyCode ? event.keyCode : event.which);
+     if(keycode == '13'){
+      // alert("AFTER ENTER clicked");
+       $('#altbtn').click();
+     }
    });
-   var marker = L.marker([30.2839, 57.0834], {icon: icon});
-   ciLayer.addMarker(marker);
-   var markers = [];
-   {% for x in lat %}
-   {% for y in lon %}
-    var marker = L.marker([{{ y }},{{ x }}], {icon: icon});
-   markers.push(marker);
-   {% endfor %}
-   {% endfor %}
-   if(markers.length){
-     ciLayer.addLayers(markers);
-/*    var markers = L.markerClusterGroup();
-   {% for x in lat %}
-   {% for y in lon %}
-    var marker = L.marker([{{ y }},{{ x }}]);
-    markers.addLayer(marker);
-   {% endfor %}
-   {% endfor %}
-   map.addLayer(markers);
-*/
-//var copymarker=[];
-	if(typeof addressPoints !== 'undefined'){
-    map.flyTo([addressPoints[0][1],addressPoints[0][2]] ,10);
-var markers = L.markerClusterGroup({spiderfyOnMaxZoom: false,disableClusteringAtZoom: 18});
+   $('#exampleModal1').on('keypress', function (event) {
+     //alert("BEFORE ENTER clicked");
+     var keycode = (event.keyCode ? event.keyCode : event.which);
+     if(keycode == '13'){
+      // alert("AFTER ENTER clicked");
+       $('#delaybtn').click();
+     }
+   });
+   $('#exampleModal2').on('keypress', function (event) {
+     //alert("BEFORE ENTER clicked");
+     var keycode = (event.keyCode ? event.keyCode : event.which);
+     if(keycode == '13'){
+      // alert("AFTER ENTER clicked");
+       $('#countbtn').click();
+     }
+   });
+var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+$(function() {
+    $('[data-toggle="popover"]').popover()
+})
+var map = L.map('mapid').setView([30.2839, 57.0834], 5);
+//var map = L.map('mapid').setView([-35.363261,149.1652299], 10);
+//L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 20,
+    id: 'mapbox.streets',
+    accessToken: 'pk.eyJ1IjoiYmFiYWtha2JhcmkiLCJhIjoiY2sxODYxcnVlMWo0bDNvdGdzaWJsZDFzdyJ9.1-2Z4mBSMB4OwqJRSvZUDQ'
+}).addTo(map);
 
-for (var i = 0; i < addressPoints.length; i++) {
-  var a = addressPoints[i];
-  var title = a[0];
-  var marker = L.marker(new L.LatLng(a[1], a[2]), { title: title , myCustomId: 0});
-  marker.on('click',onClick);
-//  marker.bindPopup(title);
-  markers.addLayer(marker);
-  //copymarker = markers;
+      // add the OpenStreetMap tiles
+  //    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  //      maxZoom: 19,
+//        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+//      }).addTo(map);
+var numoftimes = 1;
+var makesure = 0;
+var i = 1;
+var latlngs = [];
+var polyline = [];
+var popup = L.popup();
+var markers = L.markerClusterGroup({
+    spiderfyOnMaxZoom: false,
+    disableClusteringAtZoom: 18
+});
+
+
+//show uploaded address Points
+if (typeof addressPoints !== 'undefined') {
+    map.flyTo([addressPoints[0][1], addressPoints[0][2]], 10);
+    for (var j = 0; j < addressPoints.length; j++) {
+        var a = addressPoints[j];
+        var title = a[0];
+        var marker = L.marker(new L.LatLng(a[1], a[2]), {
+            title: title,
+            myCustomId: 0
+        });
+        marker.on('click', onMarkerClick);
+        markers.addLayer(marker);
+    }
 }
 map.addLayer(markers);
-}
-var i=1;
-  function onClick(e){
+//Add custom point to waypoint table
+function onMapClick(e) {
+    var marker = L.marker((new L.LatLng(e.latlng.lat, e.latlng.lng)), {
+        title: title,
+        myCustomId: 0,
+        draggable: true
+    });
+    marker.on('dragend', onMarkerDragend);
+    markers.addLayer(marker);
     var icon = L.icon.glyph({
+        prefix: '',
+        cssClass: 'sans-serif',
+        glyphSize: '18px',
+        glyph: i
+    });
+    marker.setIcon(icon)
+    marker.options.myCustomId = i;
+    document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + i + "</th><td>" + e.latlng.lat + "</td><td>" + e.latlng.lng + "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">RemoveAll</button></td></tr>";
+    map.removeLayer(polyline);
+    latlngs.push([e.latlng.lat, e.latlng.lng]);
+    polyline = L.polyline(latlngs, {
+        color: '#28d4ac'
+    });
+    map.addLayer(polyline);
+    i++;
+}
+
+
+//custom points on dragend
+function onMarkerDragend(e) {
+    var marker = e.target;
+    var position = marker.getLatLng();
+    //console.log(position)
+    document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].getElementsByTagName('td')[0].innerHTML = position.lat;
+    document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].getElementsByTagName('td')[1].innerHTML = position.lng;
+    //document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].innerHTML = "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + marker.options.myCustomId + "</th><td>" + position.lat + "</td><td>" + position.lng + "</td><td></td><td></td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">RemoveAll</button></td></tr>";
+    //removing global polyline from the map
+    map.removeLayer(polyline);
+    //removing old position from the global latlngs
+    latlngs.splice(marker.options.myCustomId - 1, 1, [position.lat, position.lng]);
+    //adding new position to the global polyline
+    polyline = L.polyline(latlngs, {
+        color: '#28d4ac'
+    });
+    //adding global polyline to map layer
+    map.addLayer(polyline);
+}
+//Adding selected points to the waypoint table
+function onMarkerClick(e) {
+    var icon = L.icon.glyph({
+        prefix: '',
+        cssClass: 'sans-serif',
+        glyphSize: '18px',
+        glyph: i
+    });
+    this.setIcon(icon)
+    //i is global waypoint counter
+    this.options.myCustomId = i;
+    document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + i + "</th><td>" + e.latlng.lat + "</td><td>" + e.latlng.lng + "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td></tr>";
+    //removing global polyline from the map
+    map.removeLayer(polyline);
+    latlngs.push([e.latlng.lat, e.latlng.lng]);
+    polyline = L.polyline(latlngs, {
+        color: '#28d4ac'
+    });
+    map.addLayer(polyline);
+    i++;
+}
+
+function fileName(e) {
+    document.getElementById('labelFile').innerHTML = document.getElementById('customFile').value;
+    document.getElementById('formFile').submit();
+}
+
+function rowClick(e) {
+    map.flyTo([e.getElementsByTagName('td')[0].innerHTML, e.getElementsByTagName('td')[1].innerHTML], 18);
+}
+
+function removeRowall(e) {
+
+    $(document).ready(function() {
+        markers.eachLayer(function(l) {
+            if (l instanceof L.Marker && l.options.myCustomId == $(e).parent().prev().prev().prev().prev().prev().html()) {
+                markers.removeLayer(l);
+            }
+            //console.log(parseInt($(e).parent().prev().prev().prev().prev().prev().html()));
+            //console.log(i);
+            for (var j = parseInt($(e).parent().prev().prev().prev().prev().prev().html()) + 1; j < i; j++) {
+                document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('th')[0].innerHTML = j - 1;
+                //    document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('th')[0].innerHTML=j-1;
+                if (l instanceof L.Marker && l.options.myCustomId == j) {
+                    //console.log("ho");
+                    var icon = L.icon.glyph({
+                        prefix: '',
+                        cssClass: 'sans-serif',
+                        glyphSize: '18px',
+                        glyph: j - 1
+                    });
+                    l.setIcon(icon)
+                    l.options.myCustomId = j - 1;
+                }
+            }
+        });
+
+        //removing global polyline from the map
+        map.removeLayer(polyline);
+        latlngs.splice(parseInt($(e).parent().prev().prev().prev().prev().prev().html()) - 1, 1);
+        polyline = L.polyline(latlngs, {
+            color: '#28d4ac'
+        });
+        map.addLayer(polyline);
+        document.getElementById("tab").deleteRow(parseInt($(e).parent().prev().prev().prev().prev().prev().html()));
+        i = i - 1;
+    });
+
+
+
+
+}
+
+function removeRow(e) {
+    $(document).ready(function() {
+        markers.eachLayer(function(l) {
+            if (l instanceof L.Marker && l.options.myCustomId == $(e).parent().prev().prev().prev().prev().prev().html()) {
+                l.setIcon(new L.Icon.Default());
+                l.options.myCustomId = 0;
+            }
+            //console.log(parseInt($(e).parent().prev().prev().prev().prev().prev().html()));
+            //console.log(i);
+            for (var j = parseInt($(e).parent().prev().prev().prev().prev().prev().html()) + 1; j < i; j++) {
+                document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('th')[0].innerHTML = j - 1;
+                //    document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('th')[0].innerHTML=j-1;
+                if (l instanceof L.Marker && l.options.myCustomId == j) {
+                    //console.log("ho");
+                    var icon = L.icon.glyph({
+                        prefix: '',
+                        cssClass: 'sans-serif',
+                        glyphSize: '18px',
+                        glyph: j - 1
+                    });
+                    l.setIcon(icon)
+                    l.options.myCustomId = j - 1;
+                }
+            }
+        });
+
+        //removing global polyline from the map
+        map.removeLayer(polyline);
+        latlngs.splice(parseInt($(e).parent().prev().prev().prev().prev().prev().html()) - 1, 1);
+        polyline = L.polyline(latlngs, {
+            color: '#28d4ac'
+        });
+        map.addLayer(polyline);
+        document.getElementById("tab").deleteRow(parseInt($(e).parent().prev().prev().prev().prev().prev().html()));
+        i = i - 1;
+    });
+    //$(e).parent().parent().hide();
+
+}
+$(document).keypress(function(e) {
+  if ($("#exampleModal").hasClass('in') && (e.keycode == 13 || e.which == 13)) {
+    alert("Enter is pressed");
+  }
+})
+
+function SetAltitudeModal(){
+  $('#exampleModal').modal('hide')
+  //console.log(text);
+    for(var j=1;j<i;j++){
+      if(!isNaN(document.getElementById('text_alt').value) && document.getElementById('text_alt').value!="" && document.getElementById('text_alt').value>=0){
+    document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[2].innerHTML = document.getElementById('text_alt').value;
+  }
+}
+  $('#exampleModal1').modal('show')
+}
+function SetDelayModal(){
+  $('#exampleModal1').modal('hide')
+  //console.log(text);
+    for(var j=1;j<i;j++){
+        if(!isNaN(document.getElementById('text_delay').value) && document.getElementById('text_delay').value!="" && document.getElementById('text_delay').value>=0){
+    document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[3].innerHTML = document.getElementById('text_delay').value;
+  }
+  }
+  $('#exampleModal2').modal('show')
+}
+function SetnumoftimesModal(){
+  $('#exampleModal2').modal('hide')
+    if(!isNaN(document.getElementById('text_count').value) && document.getElementById('text_count').value!="" && document.getElementById('text_count').value>0){
+  numoftimes = document.getElementById('text_count').value;
+}
+}
+var DroneMarker = L.marker((new L.LatLng(0, 0)), {
+    rotationAngle: 45,
+    rotationOrigin: 'center center',
+    title: title,
+    myCustomId: 0,
+});
+draggable: true
+var Dronelatlngs = [];
+var DronePolyline =[];
+function getloc() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            document.getElementById('altitude').innerHTML="<h3>"+obj[2]+"</h3>";
+            DroneMarker.setLatLng([obj[0], obj[1]])
+            DroneMarker.addTo(map);
+            var icon = L.icon({
+                iconUrl: "{% static 'img/icons8-gps-80.png'%}",
+                iconSize: [64,64],
+                iconAnchor: [32,32]
+            });
+            DroneMarker.setIcon(icon)
+            //console.log([90.51/2*Math.sin(45 * Math.PI / 180), 90.51/2*Math.cos(45 * Math.PI / 180)])
+
+            /*  var icon = L.icon.glyph({
     		prefix: '',
         cssClass:'sans-serif',
         glyphSize: '18px',
-    		glyph: i
-    	});
-    this.setIcon(icon)
-    this.options.myCustomId =i;
-    document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">"+i+"</th><td>"+e.latlng.lat+"</td><td>"+e.latlng.lng+"</td><td></td><td></td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td></tr>";
-    latlngs.push([e.latlng.lat,e.latlng.lng]);
-    var polyline = L.polyline(latlngs, {color: '#28d4ac'}).addTo(map);
-        i++;
-  }
-  function fileName(e) {
-    document.getElementById('labelFile').innerHTML=document.getElementById('customFile').value;
-    document.getElementById('formFile').submit();
-  }
-  function rowClick(e) {
-    map.flyTo([e.getElementsByTagName('td')[0].innerHTML,e.getElementsByTagName('td')[1].innerHTML],18);
-  }
-  function removeRow(e){
-  $(document).ready(function(){
-    $(e).parent().parent().hide();
-    markers.eachLayer(function(l) {
-    if( l instanceof L.Marker && l.options.myCustomId == $(e).parent().prev().prev().prev().prev().prev().html()){
-      l.setIcon(new L.Icon.Default());
-      }
+        glyphColor: 'red',
+    		glyph: 'A'
+         })*/
+         map.removeLayer(DronePolyline);
+         Dronelatlngs.push([obj[0], obj[1]]);
+         DronePolyline = L.polyline(Dronelatlngs, {
+             color: '#ae05fc'
+         });
+         map.addLayer(DronePolyline);
+        }
+    };
+    xhttp.open("GET", "http://127.0.0.1:8000/MapSys/getloc", true);
+    xhttp.send();
+}
+
+
+function status(){
+  //console.log("hi");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if(obj.status=="connected"){
+              document.getElementById('connect').innerHTML="connected";
+            }
+            else{
+              document.getElementById('connect').innerHTML="<span id=\"spinner\" class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span>Loading...";
+            }
+        }
+    };
+    xhttp.open("GET", "http://127.0.0.1:8000/MapSys/getstatus", true);
+    xhttp.send();
+}
+
+function getyaw(){
+  //console.log("hi");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            //console.log(obj.YawAngle);
+            document.getElementById('heading').innerHTML="<h3>"+obj.YawAngle+"&deg;</h3>";
+            DroneMarker.setRotationAngle(obj.YawAngle);
+        }
+    };
+    xhttp.open("GET", "http://127.0.0.1:8000/MapSys/getyaw", true);
+    xhttp.send();
+}
+var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+function csrfSafeMethod(method) {
+  if (makesure){
+    Dronelatlngs = [];
+    //DronePolyline = [];
+    map.removeLayer(DronePolyline);
+    makesure = 0;
+      var obj=[];
+        for(var j=1;j<i;j++){
+            obj.push({
+              count :numoftimes,
+              num : j,
+              lat : document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[0].innerHTML,
+              lng : document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[1].innerHTML,
+              alt : document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[2].innerHTML,
+              delay : document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[3].innerHTML
+            });
+        }
+        var d = new Date();
+        d.setTime(d.getTime() + (1*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+       document.cookie = JSON.stringify(obj)+";" + expires + ";path=/";
+    var request = new Request(
+      '/MapSys/startmission',
+    {headers: {'X-CSRFToken': csrftoken}}
+);
+fetch(request, {
+    method: 'POST',
+    dataType: "json",
+    mode: 'same-origin',  // Do not send CSRF token to another domain.
+    body: JSON.stringify(obj)
+}).then(function(response) {
+    // ...
 });
-  });
   }
+  else{
+    makesure = 1;
+  }
+}
+
+
+$(document).ready(function() {
+//  res = document.cookie.replace("csrftoken=AGApEpks30PnGX6p6kS2UKFi1H1hkAssJwodotrVCZ5NmlQXL7nNXZdfWlrADK8g;", "");
+//  console.log(res);
+//  for (var j = 0; j < arr.length; j++) {
+//  marker = new L.marker([arr[j]['lat'],arr[j]['lng']], {
+//      title: title,
+//      myCustomId: 0
+//  }).addTo(map);
+//  marker.on('click', onMarkerClick);
+//  markers.addLayer(marker);
+//}
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if(obj.status=="connected"){
+              document.getElementById('connect').innerHTML="connected";
+            }
+        }
+    };
+    xhttp.open("GET", "http://127.0.0.1:8000/MapSys/connect", true);
+    xhttp.send();
+    var xhttp1 = new XMLHttpRequest();
+    xhttp1.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            map.setView(new L.LatLng(obj[0],obj[1]),15);
+        }
+    };
+    xhttp1.open("GET", "http://127.0.0.1:8000/MapSys/getloc", true);
+    xhttp1.send();
+   setInterval(status, 5000);
+   setInterval(getloc, 300);
+   setInterval(getyaw, 300);
+});
+map.on('dblclick', onMapClick);
+
    </script>
 
    <!-- Optional JavaScript -->
      <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+
+     <script
+  src="https://code.jquery.com/jquery-3.4.1.js"
+  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+  crossorigin="anonymous"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>-->
      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
    </body>
