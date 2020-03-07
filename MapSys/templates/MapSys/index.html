@@ -291,6 +291,17 @@ overflow:auto;
 </div>
 </div>
    </div>
+
+
+
+
+
+
+
+
+
+
+
    <script>
    $('#exampleModal').on('keypress', function (event) {
      //alert("BEFORE ENTER clicked");
@@ -321,22 +332,12 @@ $(function() {
     $('[data-toggle="popover"]').popover()
 })
 var map = L.map('mapid').setView([30.2839, 57.0834], 5);
-//var map = L.map('mapid').setView([-35.363261,149.1652299], 10);
-//L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-<<<<<<< HEAD
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 20,
     id: 'mapbox.streets',
     accessToken: 'pk.eyJ1IjoiYmFiYWtha2JhcmkiLCJhIjoiY2sxODYxcnVlMWo0bDNvdGdzaWJsZDFzdyJ9.1-2Z4mBSMB4OwqJRSvZUDQ'
 }).addTo(map);
-
-      // add the OpenStreetMap tiles
-  //    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  //      maxZoom: 19,
-//        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-//      }).addTo(map);
 var numoftimes = 1;
 var makesure = 0;
 var i = 1;
@@ -362,59 +363,8 @@ if (typeof addressPoints !== 'undefined') {
         marker.on('click', onMarkerClick);
         markers.addLayer(marker);
     }
-=======
-    //attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    //maxZoom: 18,
-    //id: 'mapbox.streets',
-    accessToken: '****************************' //your access token
-   }).addTo(map);
-   var latlngs = [];
-// zoom the map to the polyline
-//map.fitBounds(polyline.getBounds());
-   /*var ciLayer = L.canvasIconLayer({}).addTo(map);
+  }
 
-     ciLayer.addOnClickListener(function (e,data) {console.log(data[0].data._latlng)});
-     ciLayer.addOnHoverListener(function (e,data) {console.log(data[0].data._leaflet_id)});
-   var icon = L.icon({
-   iconUrl: "{% static 'img/marker-red.png'%}",
-   iconSize: [20, 18],
-   iconAnchor: [10, 9]
-   });
-   var marker = L.marker([30.2839, 57.0834], {icon: icon});
-   ciLayer.addMarker(marker);
-   var markers = [];
-   {% for x in lat %}
-   {% for y in lon %}
-    var marker = L.marker([{{ y }},{{ x }}], {icon: icon});
-   markers.push(marker);
-   {% endfor %}
-   {% endfor %}
-   if(markers.length){
-     ciLayer.addLayers(markers);
-/*    var markers = L.markerClusterGroup();
-   {% for x in lat %}
-   {% for y in lon %}
-    var marker = L.marker([{{ y }},{{ x }}]);
-    markers.addLayer(marker);
-   {% endfor %}
-   {% endfor %}
-   map.addLayer(markers);
-*/
-//var copymarker=[];
-	if(typeof addressPoints !== 'undefined'){
-    map.flyTo([addressPoints[0][1],addressPoints[0][2]] ,10);
-var markers = L.markerClusterGroup({spiderfyOnMaxZoom: false,disableClusteringAtZoom: 18});
-
-for (var i = 0; i < addressPoints.length; i++) {
-  var a = addressPoints[i];
-  var title = a[0];
-  var marker = L.marker(new L.LatLng(a[1], a[2]), { title: title , myCustomId: 0});
-  marker.on('click',onClick);
-//  marker.bindPopup(title);
-  markers.addLayer(marker);
-  //copymarker = markers;
->>>>>>> c0ed9f1f873fb9f706fa0d1c900db0902fbab935
-}
 map.addLayer(markers);
 //Add custom point to waypoint table
 function onMapClick(e) {
@@ -433,7 +383,7 @@ function onMapClick(e) {
     });
     marker.setIcon(icon)
     marker.options.myCustomId = i;
-    document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + i + "</th><td>" + e.latlng.lat + "</td><td>" + e.latlng.lng + "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">RemoveAll</button></td></tr>";
+    document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + i + "</th><td>" + e.latlng.lat + "</td><td>" + e.latlng.lng + "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">Remove</button></td></tr>";
     map.removeLayer(polyline);
     latlngs.push([e.latlng.lat, e.latlng.lng]);
     polyline = L.polyline(latlngs, {
@@ -451,7 +401,7 @@ function onMarkerDragend(e) {
     //console.log(position)
     document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].getElementsByTagName('td')[0].innerHTML = position.lat;
     document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].getElementsByTagName('td')[1].innerHTML = position.lng;
-    //document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].innerHTML = "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + marker.options.myCustomId + "</th><td>" + position.lat + "</td><td>" + position.lng + "</td><td></td><td></td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">RemoveAll</button></td></tr>";
+    //document.getElementById('table-insert').getElementsByTagName('tr')[marker.options.myCustomId - 1].innerHTML = "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + marker.options.myCustomId + "</th><td>" + position.lat + "</td><td>" + position.lng + "</td><td></td><td></td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">Remove</button></td></tr>";
     //removing global polyline from the map
     map.removeLayer(polyline);
     //removing old position from the global latlngs
