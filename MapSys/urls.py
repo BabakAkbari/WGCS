@@ -10,4 +10,5 @@ urlpatterns = [
     path('connect', views.connect, name='connect'),
     path('getstatus', views.getstatus, name='getstatus'),
     path('startmission', views.startmission, name='startmission'),
+    path('uploadpoints', views.uploadpoints, name='uploadpoints'),
 ]
