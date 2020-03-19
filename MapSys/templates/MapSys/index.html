@@ -328,7 +328,7 @@
 
 
   <script>
-  var check;
+    var check = [];
     $('#exampleModal').on('keypress', function(event) {
       //alert("BEFORE ENTER clicked");
       var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -404,7 +404,9 @@
       });
       marker.setIcon(icon)
       marker.options.myCustomId = i;
-      document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + i + "</th><td>" + e.latlng.lat + "</td><td>" + e.latlng.lng +"</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" value=\""+i+"\" id=\"customCheck"+i+"\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck"+i+"\"></label></div></td></tr>";
+      document.getElementById('table-insert').innerHTML += "<tr><th scope=\"row\">" + i + "</th><td onClick=\"rowClick(this)\">" + e.latlng.lat + "</td><td onClick=\"rowClick(this)\">" + e.latlng.lng +
+        "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" value=\"" +
+        i + "\" id=\"customCheck" + i + "\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck" + i + "\"></label></div></td></tr>";
       map.removeLayer(polyline);
       latlngs.push([e.latlng.lat, e.latlng.lng]);
       polyline = L.polyline(latlngs, {
@@ -445,8 +447,9 @@
       this.setIcon(icon)
       //i is global waypoint counter
       this.options.myCustomId = i;
-      document.getElementById('table-insert').innerHTML += "<tr onClick=\"rowClick(this)\"><th scope=\"row\">" + i + "</th><td>" + e.latlng.lat + "</td><td>" + e.latlng.lng +
-        "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" id=\"customCheck"+i+"\"><label class=\"custom-control-label\" for=\"customCheck1\"></label></div></td></tr>";
+      document.getElementById('table-insert').innerHTML += "<tr><th scope=\"row\">" + i + "</th><td onClick=\"rowClick(this)\">" + e.latlng.lat + "</td><td onClick=\"rowClick(this)\">" + e.latlng.lng +
+        "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" id=\"customCheck" +
+        i + "\"><label class=\"custom-control-label\" for=\"customCheck1\"></label></div></td></tr>";
       //removing global polyline from the map
       map.removeLayer(polyline);
       latlngs.push([e.latlng.lat, e.latlng.lng]);
@@ -483,26 +486,69 @@
       xhttp.open("GET", "http://127.0.0.1:8000/MapSys/uploadpoints", true);
       xhttp.send();
     }
-    function checkbox(e){
-      if (e.checked == true){
-        e.parentElement.parentElement.previousElementSibling.lastChild.className="btn btn-warning";
-        e.parentElement.parentElement.previousElementSibling.lastChild.innerHTML="LAND";
-        $(e).parent().html("<input type=\"checkbox\" class=\"custom-control-input\" value=\""+e.value+"\" id=\"customCheck"+e.value+"\" onclick=\"checkbox(this)\" checked><label class=\"custom-control-label\" for=\"customCheck"+e.value+"\"></label>");
 
+    function checkbox(e) {
+      if (e.checked == true) {
+        check[e.value] = true;
+        markers.eachLayer(function(l) {
+          if (l instanceof L.Marker && l.options.myCustomId == e.value) {
+            console.log(e.value);
+            // var icon = L.icon.glyph({
+            //   prefix: '',
+            //   cssClass: 'sans-serif',
+            //   glyphSize: '18px',
+            //   glyph: 'L',
+            //   glyphColor: 'white'
+            // });
+            var icon = L.icon({
+              iconUrl: "{% static 'img/icons8-marker-96 (4).png'%}",
+              iconSize: [48, 48],
+              iconAnchor: [22, 48]
+            });
+            l.setIcon(icon)
+            l.options.myCustomId = e.value;
+          }
+        });
+        e.parentElement.parentElement.previousElementSibling.lastChild.className = "btn btn-warning";
+        e.parentElement.parentElement.previousElementSibling.lastChild.innerHTML = "LAND";
+        $(e).parent().html("<input type=\"checkbox\" class=\"custom-control-input\" value=\"" + e.value + "\" id=\"customCheck" + e.value + "\" onclick=\"checkbox(this)\" checked><label class=\"custom-control-label\" for=\"customCheck" + e.value +
+          "\"></label>");
 
       }
-      else{
-        e.parentElement.parentElement.previousElementSibling.lastChild.className="btn btn-danger";
-        e.parentElement.parentElement.previousElementSibling.lastChild.innerHTML="Remove";
-          $(e).parent().html("<input type=\"checkbox\" class=\"custom-control-input\" value=\""+e.value+"\" id=\"customCheck"+e.value+"\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck"+e.value+"\"></label>");
+      else {
+        check[e.value] = true;
+        markers.eachLayer(function(l) {
+          if (l instanceof L.Marker && l.options.myCustomId == e.value) {
+            console.log(e.value);
+            var icon = L.icon.glyph({
+              prefix: '',
+              cssClass: 'sans-serif',
+              glyphSize: '18px',
+              glyph: e.value
+            });
+            // var icon = L.icon({
+            //   iconUrl: "{% static 'img/icons8-marker-96 (4).png'%}",
+            //   iconSize: [48, 48],
+            //   iconAnchor: [22, 48]
+            // });
+            l.setIcon(icon)
+            l.options.myCustomId = e.value;
+          }
+        });
+        e.parentElement.parentElement.previousElementSibling.lastChild.className = "btn btn-danger";
+        e.parentElement.parentElement.previousElementSibling.lastChild.innerHTML = "Remove";
+        $(e).parent().html("<input type=\"checkbox\" class=\"custom-control-input\" value=\"" + e.value + "\" id=\"customCheck" + e.value + "\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck" + e.value +
+          "\"></label>");
       }
     }
+
     function rowClick(e) {
-      map.flyTo([e.getElementsByTagName('td')[0].innerHTML, e.getElementsByTagName('td')[1].innerHTML], 18);
+      map.flyTo([e.parentElement.getElementsByTagName('td')[0].innerHTML, e.parentElement.getElementsByTagName('td')[1].innerHTML], 18);
+      //map.flyTo([e.innerHTML, e.innerHTML], 18);
     }
 
     function removeRowall(e) {
-
+      check[$(e).parent().prev().prev().prev().prev().prev().html()]=false;
       $(document).ready(function() {
         markers.eachLayer(function(l) {
           if (l instanceof L.Marker && l.options.myCustomId == $(e).parent().prev().prev().prev().prev().prev().html()) {
@@ -537,9 +583,6 @@
         document.getElementById("tab").deleteRow(parseInt($(e).parent().prev().prev().prev().prev().prev().html()));
         i = i - 1;
       });
-
-
-
 
     }
 
@@ -711,6 +754,7 @@
         var obj = [];
         for (var j = 1; j < i; j++) {
           obj.push({
+            station: check[j],
             count: numoftimes,
             num: j,
             lat: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[0].innerHTML,
@@ -719,10 +763,12 @@
             delay: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[3].innerHTML
           });
         }
+        console.log(obj);
         //      var d = new Date();
         //      d.setTime(d.getTime() + (1*24*60*60*1000));
         //      var expires = "expires="+ d.toUTCString();
         //     document.cookie = JSON.stringify(obj)+";" + expires + ";path=/";
+        //////////////////////////////////////////////////////////////////
         var request = new Request(
           '/MapSys/startmission', {
             headers: {
@@ -738,7 +784,8 @@
         }).then(function(response) {
           // ...
         });
-      } else {
+       }
+       else {
         makesure = 1;
       }
     }
