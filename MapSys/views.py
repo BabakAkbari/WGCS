@@ -46,11 +46,12 @@ def index(request):
 
 def uploadpoints(request):
         if request.method == 'POST' and request.FILES['File']:
+            print("hereZ")
             file = request.FILES['File']
             fs = FileSystemStorage()
             filename = fs.save("MapSys/"+file.name,file)
             f = open(filename,"r")
-            f1 = open("MapSys/static/js/realworld.388.js", "w")
+            f1 = open("MapSys/static/js/fff.js", "w")
             lat = []
             lon = []
             f1.write("var addressPoints = [\n")
@@ -67,7 +68,7 @@ def uploadpoints(request):
             f1.write("]")
             f1.close()
             f.close()
-            return JsonResponse({'status':'uploade'})
+            return JsonResponse({'status':'uploaded'})
         return JsonResponse({'status':'notuploaded'})
     # Connect to the Vehicle
     #vehicle = connect('udp:127.0.0.1:14551',wait_ready=True)
@@ -122,6 +123,7 @@ def startmission(request):
     if request.method == 'POST':
         #print ('Raw Data: "%s"' % request.body)
         json_data = json.loads(request.body)
+        print(json_data)
         fs = FileSystemStorage()
         f = open("mpmissionfile.txt", "w")
         f.write("QGC WPL 110\n")
@@ -129,24 +131,40 @@ def startmission(request):
         if check:
             check = 0
             f.write("0\t0\t0\t16\t0\t0\t0\t0\t35.591713\t51.206090\t1089.402021\t1\n")
+        k = 1
+        land = []
+        y = []
         for i in json_data:
-            if i['num'] == len(json_data)-1:
-                f.write(str(i['num'])+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
-                f.write(str(i['num']+1)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
-            elif i['num'] == len(json_data):
-                f.write(str(i['num']+1)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
-                f.write(str(i['num']+2)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
-            #elif i['num'] == 1:
-            #    f.write(str(i['num'])+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+            if i['station'] == True:
+                land.append(i)
             else:
-                f.write(str(i['num'])+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+                f.write(str(k)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+                y = i
+                # if i['num'] == len(json_data):
+                #     f.write(str(k)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+                #     f.write(str(k + 1)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+                # else:
+                #     f.write(str(k)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+                k = k + 1
+            # if i['num'] == len(json_data)-1:
+            #     f.write(str(i['num'])+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+            #     f.write(str(i['num']+1)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+            # elif i['num'] == len(json_data):
+            #     f.write(str(i['num']+1)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+            #     f.write(str(i['num']+2)+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+            # #elif i['num'] == 1:
+            # #    f.write(str(i['num'])+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+            # else:
+            #     f.write(str(i['num'])+"\t0\t3\t16\t"+str(i['delay'])+"\t0\t0\t0\t"+str(i['lat'])+"\t"+str(i['lng'])+"\t"+str(i['alt'])+"\t1\n")
+        f.write(str(k)+"\t0\t3\t16\t"+str(y['delay'])+"\t0\t0\t0\t"+str(y['lat'])+"\t"+str(y['lng'])+"\t"+str(y['alt'])+"\t1\n")
         f.close()
         count = json_data[0]['count']
+        #count = k
         #users = json.loads(request)
         #for user in users:
         #    print (user['num'])
     global vehicle
     if(isinstance(vehicle, dronekit.Vehicle)):
         print("hi")
-        mission.start_mission(vehicle,int(count))
+        mission.start_mission(vehicle,int(count),land,json_data[0]['yaw'])
         return JsonResponse({'missionstate':'completed'})

@@ -231,7 +231,16 @@ def distance_to_current_waypoint(vehicle):
     targetWaypointLocation = LocationGlobalRelative(lat,lon,alt)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
     return distancetopoint
-def start_mission(vehicle,num):
+def dis(vehicle, station_pos):
+    distances = []
+    for lat,lng in station_pos:
+        distances.append(get_distance_metres(vehicle.location.global_frame, LocationGlobalRelative(float(lat), float(lng), 0)))
+    return distances.index(min(distances))
+def start_mission(vehicle,num,land,heading):
+    station_pos = []
+    for latlng in land:
+        station_pos.append([latlng['lat'], latlng['lng']])
+    print(dis(vehicle, station_pos))
     import_mission_filename = 'mpmissionfile.txt'
     export_mission_filename1 = 'exportedmission1.txt'
     export_mission_filename2 = 'exportedmission2.txt'
@@ -243,12 +252,12 @@ def start_mission(vehicle,num):
     cmds = vehicle.commands
     cmds.clear()
     cmds.upload()
-
     upload_mission(vehicle,import_mission_filename)
     #Download mission we just uploaded and save to a file
     count=save_mission(vehicle,export_mission_filename1)
     j =0
     while j < num:
+        print("uuiwaiofjofpajfpaojpovjpaojpojajopgahgoh")
         print("num",num)
         print("j",j)
         print(count)
@@ -288,40 +297,67 @@ def start_mission(vehicle,num):
                 bat_flag = 0
             if bat_flag==1 and (time.time()-bat_tim) >= 10:
                 print("# WARNING: Returning Back to Charging Station...")
-                vehicle.commands.next=count-1
-                while not vehicle.commands.next==count-1:
-                    vehicle.commands.next=count-1
+                # vehicle.commands.next=count-1
+                # while not vehicle.commands.next==count-1:
+                #     vehicle.commands.next=count-1
+                ##############################################
+                  # vehicle.commands.next=count
+                  # while not vehicle.commands.next==count:
+                  #     vehicle.commands.next=count
+                #########################################
                     #print(vehicle.commands.next)
                 break;
 
             nextwaypoint=vehicle.commands.next
             print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint(vehicle)))
-            if nextwaypoint==count-2: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
+            #if nextwaypoint==count-2: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
+            if nextwaypoint==count:
                 j = j + 1
                 if(j == num):
-                    vehicle.commands.next=count-1
+                    #vehicle.commands.next=count-1
+                    pass
                 else:
                     vehicle.commands.next=k
                 vehicle.commands.wait_ready()
                 print("Exit 'standard' mission when start heading to final waypoint")
             time.sleep(1)
-        while vehicle.commands.next==count-1:
+        #while vehicle.commands.next==count-1:
+        #while vehicle.commands.next==count:
+        ###########################################
             #print(vehicle.commands.next)
             time.sleep(1)
+        print("pospos:")
+        print(dis(vehicle, station_pos))
+        print(station_pos[dis(vehicle, station_pos)])
+        vehicle.mode = VehicleMode("GUIDED")
+        while not vehicle.mode.name=="GUIDED":
+            vehicle.mode = VehicleMode("GUIDED")
+            print("Changing mode to GUIDED...")
+            time.sleep(1)
+        vehicle.simple_goto(LocationGlobalRelative(float(station_pos[dis(vehicle, station_pos)][0]), float(station_pos[dis(vehicle, station_pos)][1]), 10))
+        while get_distance_metres(vehicle.location.global_frame, LocationGlobalRelative(float(station_pos[dis(vehicle, station_pos)][0]), float(station_pos[dis(vehicle, station_pos)][1]), 10)) > 2:
+            print(get_distance_metres(vehicle.location.global_frame, LocationGlobalRelative(float(station_pos[dis(vehicle, station_pos)][0]), float(station_pos[dis(vehicle, station_pos)][1]), 10)))
+        time.sleep(2)
         # Set mode to Land
         time.sleep(2)
-        condition_yaw(vehicle,330,relative=False)
+        condition_yaw(vehicle,float(heading),relative=False)
         time.sleep(5)
         vehicle.mode = VehicleMode("LAND")
         while not vehicle.mode.name=="LAND":
             vehicle.mode = VehicleMode("LAND")
             print("Changing mode to LAND...")
             time.sleep(1)
-        if j == num-1:
+        if j == num:
             print("Mission Completed...")
             break
         while(vehicle.battery.voltage<12.1):
             print("Battery Voltage: %s" %vehicle.battery)
             time.sleep(2)
         k=1
-        i=nextwaypoint
+        print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
+        print(nextwaypoint)
+        if nextwaypoint == 1:
+            print("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
+            i = count - 1
+        else:
+            i = nextwaypoint - 1

@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="{% static 'css/MarkerCluster.css'%}" />
   <link rel="stylesheet" href="{% static 'css/MarkerCluster.Default.css'%}">
   <script src="{% static 'js/leaflet.markercluster-src.js'%}"></script>
-  <script src="{% static 'js/realworld.388.js'%}"></script>
+  <!-- <script src="{% static 'js/fff.js'%}"></script> -->
   <script src="{% static 'js/Leaflet.Icon.Glyph.js' %}"></script>
   <script src="{% static 'js/jquery.js'%}"></script>
   <script src="{% static 'js/leaflet.rotatedMarker.js'%}"></script>
@@ -82,6 +82,10 @@
     .my-custom-scrollbar {
       height: 200px;
       overflow: auto;
+    }
+
+    .alert {
+      display: none;
     }
 
     @media screen and (max-width: 375px) and (max-height:735px) {
@@ -176,7 +180,15 @@
     <div class="row t2">
       <div class="col"></div>
       <div class="col"></div>
-      <div class="col"></div>
+      <div class="col" id="alertcont">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <h5><strong> &#9888 Caution!</strong><br>The Vehicle is about to takeoff please make sure that you are at least two meters away.</h5>
+          <button type="button" class="btn btn-secondary" onclick="csrfSafeMethod()">Start Mission</button>
+          <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </div>
       <div class="col"></div>
       <div class="col re">
         <div class="card border-primary mb-3">
@@ -279,6 +291,32 @@
         </div>
       </div>
     </div>
+    <!-- Modal -->
+    <div class="modal fade bd-example-modal-sm" id="exampleModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">
+                <h5>Set yaw Angle:</h5>
+              </label>
+              <input type="text" class="form-control" id="text_yaw">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="yawbtn" onClick="SetyawModal()">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 
     <div class="row t3">
@@ -292,8 +330,9 @@
           <button type="button" class="btn btn-info">STABILIZE</button>
           <button type="button" class="btn btn-light">LOITER</button>
           <button type="button" class="btn btn-dark">GUIDED</button>
-          <button type="button" class="btn btn-lg btn-danger" data-toggle="popover" id="startmission" title="&#9888 Caution" data-content="Are you sure you want to fly the vehicle.if so click again?" onclick="csrfSafeMethod()">Click to Start
-            Mission!</button>
+          <button type="button" class="btn btn-lg btn-danger" id="alertbut">Click to Start Mission!</button>
+          <!-- <button type="button" class="btn btn-lg btn-danger" data-toggle="popover" id="startmission" title="&#9888 Caution" data-content="Are you sure you want to fly the vehicle.if so click again?" onclick="csrfSafeMethod()">Click to Start -->
+          <!-- Mission!</button> -->
         </div>
       </div>
       <div class="col of" id="tid">
@@ -329,6 +368,7 @@
 
   <script>
     var check = [];
+    var cl = "";
     $('#exampleModal').on('keypress', function(event) {
       //alert("BEFORE ENTER clicked");
       var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -353,6 +393,14 @@
         $('#countbtn').click();
       }
     });
+    $('#exampleModal3').on('keypress', function(event) {
+      //alert("BEFORE ENTER clicked");
+      var keycode = (event.keyCode ? event.keyCode : event.which);
+      if (keycode == '13') {
+        // alert("AFTER ENTER clicked");
+        $('#yawbtn').click();
+      }
+    });
     var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
 
     var map = L.map('mapid').setView([30.2839, 57.0834], 5);
@@ -362,6 +410,7 @@
       id: 'mapbox.streets',
       accessToken: 'pk.eyJ1IjoiYmFiYWtha2JhcmkiLCJhIjoiY2sxODYxcnVlMWo0bDNvdGdzaWJsZDFzdyJ9.1-2Z4mBSMB4OwqJRSvZUDQ'
     }).addTo(map);
+    var yaw = 0;
     var numoftimes = 1;
     var makesure = 0;
     var i = 1;
@@ -413,6 +462,7 @@
         color: '#28d4ac'
       });
       map.addLayer(polyline);
+      check[i] = false;
       i++;
     }
 
@@ -444,12 +494,13 @@
         glyphSize: '18px',
         glyph: i
       });
+      check[i] = false;
       this.setIcon(icon)
       //i is global waypoint counter
       this.options.myCustomId = i;
       document.getElementById('table-insert').innerHTML += "<tr><th scope=\"row\">" + i + "</th><td onClick=\"rowClick(this)\">" + e.latlng.lat + "</td><td onClick=\"rowClick(this)\">" + e.latlng.lng +
-        "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" id=\"customCheck" +
-        i + "\"><label class=\"custom-control-label\" for=\"customCheck1\"></label></div></td></tr>";
+        "</td><td>0</td><td>0</td><td><button type=\"button\" class=\"btn btn-primary\" onClick=\"removeRow(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" value=\"" +
+        i + "\" id=\"customCheck" + i + "\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck" + i + "\"></label></div></td></tr>";
       //removing global polyline from the map
       map.removeLayer(polyline);
       latlngs.push([e.latlng.lat, e.latlng.lng]);
@@ -460,6 +511,7 @@
       i++;
     }
 
+
     function fileName(e) {
       console.log("jjoj");
       document.getElementById('labelFile').innerHTML = document.getElementById('customFile').value;
@@ -467,8 +519,11 @@
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          //show uploaded address Points
-          if (typeof addressPoints !== 'undefined') {
+          $.getScript("{% static 'js/fff.js'%}", function() {
+            //$.getScript('static/js/fff.js');
+            console.log("lpppp");
+            //if (typeof addressPoints !== 'undefined') {
+            console.log("lpppp");
             map.flyTo([addressPoints[0][1], addressPoints[0][2]], 10);
             for (var j = 0; j < addressPoints.length; j++) {
               var a = addressPoints[j];
@@ -480,15 +535,22 @@
               marker.on('click', onMarkerClick);
               markers.addLayer(marker);
             }
-          }
+            //}
+          });
+
         }
       };
-      xhttp.open("GET", "http://127.0.0.1:8000/MapSys/uploadpoints", true);
-      xhttp.send();
+      var form = document.getElementById('formFile');
+      var formData = new FormData(form);
+      xhttp.open("POST", "http://127.0.0.1:8000/MapSys/uploadpoints", true);
+      xhttp.send(formData);
     }
 
     function checkbox(e) {
+
       if (e.checked == true) {
+        cl = e.parentElement.parentElement.previousElementSibling.lastChild.className;
+        console.log(cl);
         check[e.value] = true;
         markers.eachLayer(function(l) {
           if (l instanceof L.Marker && l.options.myCustomId == e.value) {
@@ -514,9 +576,8 @@
         $(e).parent().html("<input type=\"checkbox\" class=\"custom-control-input\" value=\"" + e.value + "\" id=\"customCheck" + e.value + "\" onclick=\"checkbox(this)\" checked><label class=\"custom-control-label\" for=\"customCheck" + e.value +
           "\"></label>");
 
-      }
-      else {
-        check[e.value] = true;
+      } else {
+        check[e.value] = false;
         markers.eachLayer(function(l) {
           if (l instanceof L.Marker && l.options.myCustomId == e.value) {
             console.log(e.value);
@@ -535,7 +596,7 @@
             l.options.myCustomId = e.value;
           }
         });
-        e.parentElement.parentElement.previousElementSibling.lastChild.className = "btn btn-danger";
+        e.parentElement.parentElement.previousElementSibling.lastChild.className = cl;
         e.parentElement.parentElement.previousElementSibling.lastChild.innerHTML = "Remove";
         $(e).parent().html("<input type=\"checkbox\" class=\"custom-control-input\" value=\"" + e.value + "\" id=\"customCheck" + e.value + "\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck" + e.value +
           "\"></label>");
@@ -548,7 +609,7 @@
     }
 
     function removeRowall(e) {
-      check[$(e).parent().prev().prev().prev().prev().prev().html()]=false;
+      check[$(e).parent().prev().prev().prev().prev().prev().html()] = false;
       $(document).ready(function() {
         markers.eachLayer(function(l) {
           if (l instanceof L.Marker && l.options.myCustomId == $(e).parent().prev().prev().prev().prev().prev().html()) {
@@ -658,6 +719,14 @@
       if (!isNaN(document.getElementById('text_count').value) && document.getElementById('text_count').value != "" && document.getElementById('text_count').value > 0) {
         numoftimes = document.getElementById('text_count').value;
       }
+      $('#exampleModal3').modal('show')
+    }
+
+    function SetyawModal() {
+      $('#exampleModal3').modal('hide')
+      if (!isNaN(document.getElementById('text_yaw').value) && document.getElementById('text_yaw').value != "" && document.getElementById('text_yaw').value > 0) {
+        yaw = document.getElementById('text_yaw').value;
+      }
     }
     var DroneMarker = L.marker((new L.LatLng(0, 0)), {
       rotationAngle: 45,
@@ -746,62 +815,106 @@
     var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     function csrfSafeMethod(method) {
-      if (makesure) {
-        Dronelatlngs = [];
-        //DronePolyline = [];
-        map.removeLayer(DronePolyline);
-        makesure = 0;
-        var obj = [];
-        for (var j = 1; j < i; j++) {
-          obj.push({
-            station: check[j],
-            count: numoftimes,
-            num: j,
-            lat: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[0].innerHTML,
-            lng: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[1].innerHTML,
-            alt: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[2].innerHTML,
-            delay: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[3].innerHTML
-          });
-        }
-        console.log(obj);
-        //      var d = new Date();
-        //      d.setTime(d.getTime() + (1*24*60*60*1000));
-        //      var expires = "expires="+ d.toUTCString();
-        //     document.cookie = JSON.stringify(obj)+";" + expires + ";path=/";
-        //////////////////////////////////////////////////////////////////
-        var request = new Request(
-          '/MapSys/startmission', {
-            headers: {
-              'X-CSRFToken': csrftoken
-            }
-          }
-        );
-        fetch(request, {
-          method: 'POST',
-          dataType: "json",
-          mode: 'same-origin', // Do not send CSRF token to another domain.
-          body: JSON.stringify(obj)
-        }).then(function(response) {
-          // ...
+      //if (makesure) {
+      Dronelatlngs = [];
+      //DronePolyline = [];
+      map.removeLayer(DronePolyline);
+      makesure = 0;
+      var obj = [];
+      var landpos = 0;
+      for (var j = 1; j < i; j++) {
+        if (check[j])
+          landpos++;
+        obj.push({
+          yaw: yaw,
+          station: check[j],
+          count: numoftimes,
+          num: j,
+          lat: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[0].innerHTML,
+          lng: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[1].innerHTML,
+          alt: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[2].innerHTML,
+          delay: document.getElementById("tab").getElementsByTagName('tr')[j].getElementsByTagName('td')[3].innerHTML
         });
-       }
-       else {
-        makesure = 1;
       }
+      if (!landpos) {
+        console.log("no land pos");
+        return;
+      }
+      console.log(obj);
+      var d = new Date();
+      d.setTime(d.getTime() + (1 * 24 * 60 * 60 * 1000));
+      var expires = "expires=" + d.toUTCString();
+      document.cookie = JSON.stringify(obj) + ";" + expires + ";path=/";
+      //////////////////////////////////////////////////////////////////
+      var request = new Request(
+        '/MapSys/startmission', {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        }
+      );
+      fetch(request, {
+        method: 'POST',
+        dataType: "json",
+        mode: 'same-origin', // Do not send CSRF token to another domain.
+        body: JSON.stringify(obj)
+      }).then(function(response) {
+        // ...
+      });
+      //}
+      //else {
+      //  makesure = 1;
+      //}
     }
 
-
     $(document).ready(function() {
-      //  res = document.cookie.replace("csrftoken=AGApEpks30PnGX6p6kS2UKFi1H1hkAssJwodotrVCZ5NmlQXL7nNXZdfWlrADK8g;", "");
-      //  console.log(res);
-      //  for (var j = 0; j < arr.length; j++) {
-      //  marker = new L.marker([arr[j]['lat'],arr[j]['lng']], {
-      //      title: title,
-      //      myCustomId: 0
-      //  }).addTo(map);
-      //  marker.on('click', onMarkerClick);
-      //  markers.addLayer(marker);
-      //}
+      $('.close').click(function() {
+
+        $('.alert').hide();
+        document.getElementById("alertcont").classList.remove("ov");
+      })
+      $('#alertbut').click(function() {
+        document.getElementById("alertcont").classList.add("ov");
+        $('.alert').show()
+      })
+    });
+    $(document).ready(function() {
+      res = document.cookie.replace("csrftoken=AGApEpks30PnGX6p6kS2UKFi1H1hkAssJwodotrVCZ5NmlQXL7nNXZdfWlrADK8g;", "");
+      var arr = JSON.parse(res);
+      for (j = 0; j < arr.length; j++) {
+        var marker = L.marker((new L.LatLng(arr[j]['lat'], arr[j]['lng'])), {
+          //title: title,
+          myCustomId: 0,
+          draggable: true
+        });
+        var icon = L.icon.glyph({
+          prefix: '',
+          cssClass: 'sans-serif',
+          glyphSize: '18px',
+          glyph: i
+        });
+        marker.setIcon(icon)
+        //marker.on('click', onMarkerClick);
+        markers.addLayer(marker);
+        marker.options.myCustomId = i;
+        check[i] = false;
+        document.getElementById('table-insert').innerHTML += "<tr><th scope=\"row\">" + i + "</th><td onClick=\"rowClick(this)\">" + arr[j]['lat'] + "</td><td onClick=\"rowClick(this)\">" + arr[j]['lng'] +
+          "</td><td>" + arr[j]['alt'] + "</td><td>" + arr[j]['delay'] +
+          "</td><td><button type=\"button\" class=\"btn btn-danger\" onClick=\"removeRowall(this)\">Remove</button></td><td><div class=\"custom-control custom-checkbox\"><input type=\"checkbox\" class=\"custom-control-input\" value=\"" +
+          i + "\" id=\"customCheck" + i + "\" onclick=\"checkbox(this)\"><label class=\"custom-control-label\" for=\"customCheck" + i + "\"></label></div></td></tr>";
+        if (arr[j]['station']) {
+          document.getElementById("customCheck" + i).checked = true;
+          checkbox(document.getElementById("customCheck" + i));
+        }
+        marker.on('dragend', onMarkerDragend);
+        map.removeLayer(polyline);
+        latlngs.push([arr[j]['lat'], arr[j]['lng']]);
+        polyline = L.polyline(latlngs, {
+          color: '#28d4ac'
+        });
+        map.addLayer(polyline);
+        i++
+      }
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
